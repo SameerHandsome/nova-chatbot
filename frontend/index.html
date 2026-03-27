@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NOVA — Multimodal AI</title>
+<link rel="stylesheet" href="/css/base.css" />
+<style>
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,108,255,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .hero-logo { font-size: 20px; font-weight: 800; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; justify-content: center; }
+  .hero h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; line-height: 1.1; margin-bottom: 18px; letter-spacing: -1.5px; }
+  .hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { font-size: 18px; color: var(--muted); max-width: 480px; line-height: 1.7; margin: 0 auto 40px; }
+  .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .features { display: flex; gap: 16px; justify-content: center; margin-top: 64px; flex-wrap: wrap; }
+  .feat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; width: 200px; text-align: left; }
+  .feat-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+  .feat-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .feat-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+<main class="hero fade-up">
+  <div class="hero-logo"><div class="logo-dot"></div> NOVA</div>
+
+  <h1>Multimodal AI<br><span>that understands everything</span></h1>
+  <p>Text, images, and voice — send anything. NOVA understands it all, powered by Groq and LangGraph.</p>
+
+  <div class="hero-btns">
+    <a href="/register.html" class="btn btn-primary btn-lg">Get started free →</a>
+    <a href="/login.html"    class="btn btn-ghost btn-lg">Sign in</a>
+  </div>
+
+  <div class="features">
+    <div class="feat-card">
+      <span class="feat-icon">🎤</span>
+      <div class="feat-title">Voice Input</div>
+      <div class="feat-desc">Record your voice — transcribed instantly by Groq Whisper.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🖼</span>
+      <div class="feat-title">Image Analysis</div>
+      <div class="feat-desc">Send any image and ask questions about it.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔧</span>
+      <div class="feat-title">Live Tools</div>
+      <div class="feat-desc">Weather, stocks, currency, web search — real-time data.</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🧠</span>
+      <div class="feat-title">Learns You</div>
+      <div class="feat-desc">Analyzes your preferences after every session.</div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,273 @@
+/* ─────────────────────────────────────────────────────────────
+   pages.css — History & Profile page styles
+───────────────────────────────────────────────────────────── */
+
+/* ── Page Header ─────────────────────────────────────────────── */
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.page-header p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── History Page ────────────────────────────────────────────── */
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.session-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeUp 0.3s ease both;
+}
+.session-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.session-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.session-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+  flex: 1;
+}
+
+.session-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.session-status.active   { color: var(--success); background: rgba(77,255,180,0.1); border: 1px solid rgba(77,255,180,0.3); }
+.session-status.ended    { color: var(--muted);   background: var(--surface2);      border: 1px solid var(--border); }
+
+.session-summary {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.session-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.session-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.modality-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+.modality-pill.voice { color: var(--accent2); border-color: rgba(255,108,157,0.3); }
+.modality-pill.image { color: var(--warn);    border-color: rgba(255,179,71,0.3); }
+
+/* History loading skeleton */
+.session-skeleton {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skel-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+.skel-line.w-60 { width: 60%; }
+.skel-line.w-80 { width: 80%; }
+.skel-line.w-40 { width: 40%; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Profile Page ────────────────────────────────────────────── */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .profile-grid { grid-template-columns: 1fr; }
+}
+
+/* User info card */
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.profile-name {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.profile-tier {
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.profile-tier.free { background: rgba(107,107,128,0.15); color: var(--muted);   border: 1px solid var(--border); }
+.profile-tier.pro  { background: rgba(255,179,71,0.12);  color: var(--warn);    border: 1px solid rgba(255,179,71,0.3); }
+
+/* Preferences panel */
+.pref-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pref-panel-title {
+  font-size: 16px;
+  font-weight: 700;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pref-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pref-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+
+.pref-value {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pref-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pref-tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(124,108,255,0.1);
+  border: 1px solid rgba(124,108,255,0.25);
+  color: var(--accent);
+}
+
+.modality-flags {
+  display: flex;
+  gap: 8px;
+}
+
+.flag-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.flag-chip.on  { color: var(--success); border-color: rgba(77,255,180,0.35); background: rgba(77,255,180,0.07); }
+.flag-chip.off { color: var(--muted);   border-color: var(--border);         background: var(--surface2); }
+
+.pref-updated {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* No preferences yet */
+.no-prefs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.no-prefs-icon { font-size: 40px; }
+.no-prefs p    { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 280px; }

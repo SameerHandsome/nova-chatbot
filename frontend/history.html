@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>History — NOVA</title>
+<link rel="stylesheet" href="/css/base.css" />
+<link rel="stylesheet" href="/css/pages.css" />
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+
+  /* Two-panel layout exactly like Claude */
+  .history-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Navbar injected by components.js sits at top (flex-shrink:0) */
+
+  .history-body {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── Left panel: sessions list ── */
+  .sessions-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sessions-sidebar-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sessions-sidebar-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 2px;
+  }
+
+  .sessions-sidebar-header p {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0;
+    font-family: var(--font-mono);
+  }
+
+  .sessions-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  /* Individual session item */
+  .session-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+
+  .session-item:hover {
+    background: var(--surface2);
+    border-left-color: var(--border);
+  }
+
+  .session-item.selected {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+  }
+
+  .session-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+
+  .session-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .session-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .session-dot.active { background: #22c55e; }
+  .session-dot.ended  { background: var(--muted); }
+
+  /* ── Right panel: messages ── */
+  .messages-panel-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg, #0d0d14);
+  }
+
+  .messages-panel-header {
+    flex-shrink: 0;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .messages-panel-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Scrollable messages area */
+  #messagesPanel {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── Message bubbles (mirrors chat.css style) ── */
+  .hist-message {
+    display: flex;
+    gap: 12px;
+    animation: fadeUp 0.25s ease both;
+  }
+
+  .hist-message.hist-user { flex-direction: row-reverse; }
+
+  .hist-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .hist-bubble {
+    max-width: 72%;
+    padding: 11px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+    word-break: break-word;
+  }
+
+  .hist-bubble-user {
+    background: var(--surface2);
+    border: 1px solid rgba(124,108,255,0.25);
+    border-bottom-right-radius: 3px;
+  }
+
+  .hist-bubble-bot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 3px;
+  }
+
+  /* Empty / loading states */
+  .panel-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .panel-placeholder-icon { font-size: 40px; opacity: 0.4; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<script type="module" src="/js/auth-guard.js"></script>
+
+<div class="history-layout">
+  <!-- Navbar injected here by components.js -->
+
+  <div class="history-body">
+
+    <!-- LEFT: Sessions list -->
+    <div class="sessions-sidebar">
+      <div class="sessions-sidebar-header">
+        <h2>Sessions</h2>
+        <p>Click to view conversation</p>
+      </div>
+      <div class="sessions-list" id="sessionsGrid"></div>
+    </div>
+
+    <!-- RIGHT: Messages for selected session -->
+    <div class="messages-panel-wrap">
+      <div class="messages-panel-header">
+        <h3 id="messagesPanelTitle">Select a session</h3>
+      </div>
+      <div id="messagesPanel">
+        <div class="panel-placeholder">
+          <div class="panel-placeholder-icon">💬</div>
+          <div>Select a session from the left to view its messages</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="/js/history.js"></script>
+</body>
+</html>

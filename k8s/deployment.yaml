@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nova-chatbot
+  labels:
+    app: nova-chatbot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nova-chatbot
+  template:
+    metadata:
+      labels:
+        app: nova-chatbot
+    spec:
+      containers:
+        - name: nova-chatbot
+          image: your-registry/nova-chatbot:latest
+          ports:
+            - containerPort: 8000
+
+          # ── Non-sensitive config from ConfigMap ──────────────────────────────
+          envFrom:
+            - configMapRef:
+                name: nova-config
+            - secretRef:
+                name: nova-secrets
+
+          # ── Resource limits ──────────────────────────────────────────────────
+          resources:
+            requests:
+              cpu:    "250m"
+              memory: "256Mi"
+            limits:
+              cpu:    "500m"
+              memory: "512Mi"
+
+          # ── Health probes ────────────────────────────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds:       30
+            failureThreshold:    3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds:       10
+            failureThreshold:    3
+
+      # Never use default service account in production
+      automountServiceAccountToken: false

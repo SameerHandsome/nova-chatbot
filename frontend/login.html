@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign In — NOVA</title>
+<link rel="stylesheet" href="/css/base.css" />
+<link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="logo-dot"></div> NOVA</div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to your account</p>
+
+    <div class="auth-error" id="authError"></div>
+
+    <form class="auth-form" id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">Sign in</button>
+    </form>
+
+    <div class="divider" style="margin:20px 0">or</div>
+
+    <button class="btn-google" onclick="githubLogin()">
+      <span class="github-icon"></span>
+      Continue with GitHub
+    </button>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/register.html">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { saveToken }  from '/js/auth.js';
+import { apiClient }  from '/js/api.js';
+
+const form      = document.getElementById('loginForm');
+const submitBtn = document.getElementById('submitBtn');
+const errorEl   = document.getElementById('authError');
+
+function showError(msg) {
+  errorEl.textContent = msg;
+  errorEl.classList.add('show');
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorEl.classList.remove('show');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+  try {
+    const data = await apiClient.login({
+      email:    document.getElementById('email').value,
+      password: document.getElementById('password').value,
+    });
+    saveToken(data.access_token);
+    window.location.href = '/chat.html';
+  } catch (err) {
+    showError(err.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+  }
+});
+
+function githubLogin() {
+  window.location.href = apiClient.githubLoginUrl();
+}
+window.githubLogin = githubLogin;
+</script>
+</body>
+</html>

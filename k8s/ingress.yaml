@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nova-chatbot-ingress
+  labels:
+    app: nova-chatbot
+  annotations:
+    # Automatically provision TLS cert via cert-manager + Let's Encrypt
+    cert-manager.io/cluster-issuer:          "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - your-domain.com
+      secretName: nova-tls-cert
+  rules:
+    - host: your-domain.com
+      http:
+        paths:
+          - path:     /
+            pathType: Prefix
+            backend:
+              service:
+                name: nova-chatbot-svc
+                port:
+                  number: 80

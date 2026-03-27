@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Account — NOVA</title>
+<link rel="stylesheet" href="/css/base.css" />
+<link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="logo-dot"></div> NOVA</div>
+    <h1 class="auth-title">Create account</h1>
+    <p class="auth-subtitle">Free forever. No credit card needed.</p>
+
+    <div class="auth-error" id="authError"></div>
+
+    <form class="auth-form" id="regForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="cooluser" required minlength="3" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Min 8 characters" required minlength="8" />
+      </div>
+      <button type="submit" class="btn btn-primary" id="submitBtn">Create account</button>
+    </form>
+
+    <div class="divider" style="margin:20px 0">or</div>
+
+    <button class="btn-google" onclick="githubLogin()">
+      <span class="github-icon"></span>
+      Continue with GitHub
+    </button>
+
+    <div class="auth-footer">
+      Already have an account? <a href="/login.html">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { saveToken } from '/js/auth.js';
+import { apiClient } from '/js/api.js';
+
+const form      = document.getElementById('regForm');
+const submitBtn = document.getElementById('submitBtn');
+const errorEl   = document.getElementById('authError');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  errorEl.classList.remove('show');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span> Creating…';
+
+  try {
+    const data = await apiClient.register({
+      email:    document.getElementById('email').value,
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value,
+    });
+    saveToken(data.access_token);
+    window.location.href = '/chat.html';
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.classList.add('show');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Create account';
+  }
+});
+
+function githubLogin() { window.location.href = apiClient.githubLoginUrl(); }
+window.githubLogin = githubLogin;
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Profile — NOVA</title>
+<link rel="stylesheet" href="/css/base.css" />
+<link rel="stylesheet" href="/css/pages.css" />
+</head>
+<body>
+<script type="module" src="/js/auth-guard.js"></script>
+<div class="page">
+  <div class="page-content">
+    <div class="page-header">
+      <h1>Profile</h1>
+      <p>Your account info and AI-analyzed preferences.</p>
+    </div>
+    <div class="profile-grid">
+      <!-- Left: user info -->
+      <div class="profile-card">
+        <div class="profile-avatar" id="profileInitial">?</div>
+        <div class="profile-name"  id="profileName">—</div>
+        <div class="profile-email" id="profileEmail">—</div>
+        <span class="profile-tier" id="profileTier">FREE</span>
+        <div style="font-size:12px;color:var(--muted)" id="profileSince"></div>
+        <button class="btn btn-danger btn-sm" onclick="import('/js/auth.js').then(m=>m.logout())">
+          Sign out
+        </button>
+      </div>
+      <!-- Right: preferences -->
+      <div class="pref-panel" id="prefPanel">
+        <div style="color:var(--muted);font-size:14px;text-align:center;padding:20px">
+          Loading preferences…
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="/js/profile.js"></script>
+</body>
+</html>
