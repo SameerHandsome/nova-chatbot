@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: nova-chatbot
-          image: your-registry/nova-chatbot:latest
+          image: sameerhandsome12/nova-chatbot:latest
           ports:
             - containerPort: 8000
 
