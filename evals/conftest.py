@@ -12,12 +12,10 @@ Exports:
 import pytest
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage
-
 from backend.config import get_settings
 
 settings        = get_settings()
 PASS_THRESHOLD  = 3   # score out of 5 to be considered passing
-
 
 # ── Judge LLM ─────────────────────────────────────────────────────────────────
 
@@ -32,21 +30,11 @@ def judge_llm() -> ChatGroq:
         api_key     = settings.groq_api_key,
     )
 
-
 # ── Scorer ────────────────────────────────────────────────────────────────────
 
 def score_response(question: str, answer: str, criteria: str) -> int:
     """
     Ask the judge LLM to score `answer` on a 1-5 scale given `criteria`.
-
-    Scale:
-      5 = Excellent — fully satisfies all criteria
-      4 = Good      — mostly satisfies with minor gaps
-      3 = Acceptable — partially satisfies (PASS threshold)
-      2 = Poor      — mostly fails
-      1 = Fail      — completely fails
-
-    Returns: int (1-5)
     """
     llm    = judge_llm()
     prompt = (
@@ -65,19 +53,18 @@ def score_response(question: str, answer: str, criteria: str) -> int:
     resp = llm.invoke([HumanMessage(content=prompt)])
     try:
         return int(resp.content.strip())
-    except ValueError:
+    except (ValueError, AttributeError):
         return 1
-
 
 # ── State Builder ─────────────────────────────────────────────────────────────
 
 def make_graph_state(
-    text:             str  = None,
-    image_b64:        str  = None,
-    image_description:str  = None,
-    transcribed_text: str  = None,
-    audio_b64:        str  = None,
-    chat_history:     list = None,
+    text:              str  = None,
+    image_b64:         str  = None,
+    image_description: str  = None,
+    transcribed_text:  str  = None,
+    audio_b64:         str  = None,
+    chat_history:      list = None,
 ) -> dict:
     """Build a clean ChatState for direct graph node invocation in evals."""
     return {
@@ -88,14 +75,13 @@ def make_graph_state(
         "transcribed_text":     transcribed_text,
         "image_description":    image_description,
         "merged_input":         None,
-        "lc_messages":          [],
+        "messages":             [],  # Updated to match graph.py
         "chat_history":         chat_history or [],
         "final_response":       None,
         "tools_called":         [],
         "tool_results":         [],
         "error":                None,
     }
-
 
 # ── Assert Helper ─────────────────────────────────────────────────────────────
 
@@ -107,18 +93,15 @@ def assert_pass(score: int, label: str):
         f"(minimum passing: {PASS_THRESHOLD}/5)"
     )
 
-
 # ── Pytest Fixtures ───────────────────────────────────────────────────────────
 
 @pytest.fixture
 def graph_state():
     return make_graph_state
 
-
 @pytest.fixture
 def scorer():
     return score_response
-
 
 @pytest.fixture
 def passer():

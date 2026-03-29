@@ -4,7 +4,8 @@
  * All methods auto-attach Authorization header and handle 401 redirects.
  */
 
-const BASE_URL = 'http://localhost:8000';
+// Explicitly pointing to the new prefixed backend router
+export const BASE_URL = 'http://localhost:8000/api';
 
 function _getToken() {
   return localStorage.getItem('nova_token');
@@ -94,6 +95,5 @@ export const apiClient = {
 
   async getPreferences() {
     return _request('GET', '/preferences');
-  },
-
+  }
 };

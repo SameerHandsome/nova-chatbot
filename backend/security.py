@@ -14,8 +14,7 @@ Important GitHub quirk handled:
 """
 
 import uuid
-from datetime import datetime, timedelta
-
+from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends
@@ -49,7 +48,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def create_access_token(user_id: str, email: str, tier: str) -> str:
-    expire  = datetime.utcnow() + timedelta(minutes=settings.jwt_expire_minutes)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
     payload = {
         "sub":   user_id,
         "email": email,

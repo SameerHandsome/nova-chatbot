@@ -1,6 +1,5 @@
 from functools import lru_cache
-from pydantic_settings import BaseSettings
-
+from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # -- Groq --
     groq_api_key: str
@@ -35,10 +34,10 @@ class Settings(BaseSettings):
     app_env: str = "development"
     frontend_url: str = "http://localhost:8000"
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        extra = "ignore"  # This prevents "Extra inputs are not permitted" errors
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
 
 
 @lru_cache()

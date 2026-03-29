@@ -1,5 +1,5 @@
 /**
- * history.js — Session history with two-panel layout like Claude.
+ * history.js — Session history with two-panel layout.
  * Left: sessions list. Right: messages for selected session.
  */
 
@@ -40,100 +40,94 @@ async function loadSessions() {
         loadMessages(s.id);
       }
     });
-
   } catch (err) {
-    showToast(err.message, 'error');
-    list.innerHTML = `<div style="padding:16px;color:var(--danger);font-size:13px">Failed to load.</div>`;
+    list.innerHTML = `<div style="padding:16px;color:var(--danger)">Failed to load sessions.</div>`;
+    showToast('Error loading history', 'error');
   }
 }
 
-// ── Build session list item ───────────────────────────────────────────────────
+function buildSessionItem(session) {
+  const el = document.createElement('div');
+  el.className = 'session-item';
+  
+  const d = new Date(session.created_at);
+  const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-function buildSessionItem(s) {
-  const item  = document.createElement('div');
-  item.className = 'session-item';
-  item.dataset.id = s.id;
+  el.innerHTML = `
+    <div class="session-title">${esc(session.title || 'New Conversation')}</div>
+    <div class="session-meta">${dateStr} • ${timeStr}</div>
+  `;
 
-  const date   = new Date(s.created_at).toLocaleDateString(undefined, {
-    month: 'short', day: 'numeric',
-  });
-  const title  = s.title ? s.title.substring(0, 50) : 'Untitled session';
-  const active = s.is_active;
-
-  item.innerHTML = `
-    <div class="session-item-title">${esc(title)}</div>
-    <div class="session-item-meta">
-      <span class="session-dot ${active ? 'active' : 'ended'}"></span>
-      <span>${date}</span>
-      <span>${active ? 'Active' : 'Ended'}</span>
-    </div>`;
-
-  item.addEventListener('click', () => {
-    // Deselect all
-    document.querySelectorAll('.session-item').forEach(el => el.classList.remove('selected'));
-    item.classList.add('selected');
-    loadMessages(s.id);
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.session-item').forEach(n => n.classList.remove('selected'));
+    el.classList.add('selected');
+    loadMessages(session.id);
   });
 
-  return item;
+  return el;
 }
 
-// ── Load messages for a session ───────────────────────────────────────────────
+// ── Load selected session messages ────────────────────────────────────────────
 
 async function loadMessages(sessionId) {
   const panel = document.getElementById('messagesPanel');
-  const title = document.getElementById('messagesPanelTitle');
-  const s     = allSessions.find(x => x.id === sessionId);
-
-  if (title) title.textContent = s?.title || 'Session Messages';
-
   panel.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;height:120px;color:var(--muted);font-size:13px">
-      Loading messages…
+    <div class="panel-placeholder">
+      <div class="spinner" style="width:24px;height:24px"></div>
     </div>`;
 
   try {
     const messages = await apiClient.getSessionMessages(sessionId);
-
-    if (!messages.length) {
-      panel.innerHTML = `
-        <div style="text-align:center;padding:48px 20px;color:var(--muted);font-size:13px">
-          No messages in this session.
-        </div>`;
+    if (!messages || !messages.length) {
+      panel.innerHTML = `<div class="panel-placeholder">No messages in this session.</div>`;
       return;
     }
 
     panel.innerHTML = '';
+    
     messages.forEach(msg => {
-      const userEl = buildUserBubble(msg);
-      if (userEl) panel.appendChild(userEl);
-      if (msg.response_text) panel.appendChild(buildBotBubble(msg));
+      // If the backend happens to send a pure assistant row, render it
+      if (msg.role === 'assistant') {
+        panel.appendChild(buildBotBubble(msg));
+        return;
+      }
+
+      // 1. Render the User's input (Fix: mapped to raw_text)
+      panel.appendChild(buildUserBubble(msg));
+      
+      // 2. Render the AI's response from the exact same DB row
+      if (msg.response_text || msg.final_response || msg.response) {
+        panel.appendChild(buildBotBubble(msg));
+      }
+    });
+    
+    // Auto scroll to bottom of history
+    requestAnimationFrame(() => {
+      panel.scrollTop = panel.scrollHeight;
     });
 
-    panel.scrollTop = panel.scrollHeight;
-
   } catch (err) {
-    panel.innerHTML = `
-      <div style="color:var(--danger);padding:20px;font-size:13px">
-        Error: ${esc(err.message)}
-      </div>`;
+    panel.innerHTML = `<div class="panel-placeholder" style="color:var(--danger)">Failed to load messages.</div>`;
   }
 }
 
-// ── Build message bubbles ─────────────────────────────────────────────────────
-
 function buildUserBubble(msg) {
   const parts = [];
-  if (msg.has_audio && msg.audio_transcript) {
-    parts.push(`<div style="font-size:13px"><span style="font-family:var(--font-mono);font-size:10px;color:var(--accent2)">🎙 Voice:</span> ${esc(msg.audio_transcript)}</div>`);
+  
+  // FIX: Checks for backend booleans if the full base64 string isn't sent back
+  if (msg.has_image || msg.image_b64) {
+    parts.push(`<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:4px">🖼️ Image Attached</div>`);
   }
-  if (msg.has_text && msg.raw_text) {
-    parts.push(`<div style="font-size:14px;line-height:1.6">${esc(msg.raw_text)}</div>`);
+  if (msg.has_audio || msg.audio_b64) {
+    parts.push(`<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:4px">🎤 Voice Message</div>`);
   }
-  if (msg.has_image) {
-    parts.push(`<div style="font-family:var(--font-mono);font-size:10px;color:var(--warn)">🖼 Image attached</div>`);
+  
+  // FIX: Safely reads raw_text (your actual DB column) instead of message_text
+  const textContent = msg.raw_text || msg.message_text || '';
+  if (textContent) {
+    parts.push(`<div>${fmt(textContent)}</div>`);
   }
-  if (!parts.length) return null;
 
   const el = document.createElement('div');
   el.className = 'hist-message hist-user';
@@ -148,12 +142,15 @@ function buildBotBubble(msg) {
     .map(t => `<span style="font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid rgba(108,255,206,0.4);color:var(--accent3);background:rgba(108,255,206,0.07);margin-right:4px">🔧 ${t}</span>`)
     .join('');
 
+  // FIX: Safely falls back through all possible backend response key names
+  const textContent = msg.response_text || msg.final_response || msg.response || 'No text content available.';
+
   const el = document.createElement('div');
   el.className = 'hist-message hist-bot';
   el.innerHTML = `
     <div class="hist-avatar" style="background:var(--surface2);border:1px solid var(--border)">✦</div>
     <div class="hist-bubble hist-bubble-bot">
-      <div style="font-size:14px;line-height:1.65">${fmt(msg.response_text)}</div>
+      <div style="font-size:14px;line-height:1.65">${fmt(textContent)}</div>
       ${tools ? `<div style="margin-top:8px">${tools}</div>` : ''}
     </div>`;
   return el;
@@ -162,13 +159,9 @@ function buildBotBubble(msg) {
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function fmt(text) {
-  return esc(text || '')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g,     '<em>$1</em>')
-    .replace(/`(.*?)`/g,       '<code style="font-family:var(--font-mono);background:var(--surface2);padding:1px 5px;border-radius:3px">$1</code>')
-    .replace(/\n/g,            '<br>');
+function fmt(s) {
+  return esc(s).replace(/\n/g, '<br>');
 }

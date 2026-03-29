@@ -11,14 +11,14 @@ Tools:
 
 import httpx
 from langchain_core.tools import tool
-from langchain_community.tools import TavilySearchResults, WikipediaQueryRun
+from langchain_community.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
+from langchain_community.tools.tavily_search import TavilySearchResults
 from langsmith import traceable
 
 from backend.config import get_settings
 
 settings = get_settings()
-
 
 # ── 1. Weather ────────────────────────────────────────────────────────────────
 
@@ -92,18 +92,22 @@ async def currency_tool(query: str) -> str:
 
 # ── 3. Tavily Web Search ──────────────────────────────────────────────────────
 
+@tool
 @traceable(name="tavily_search_tool")
-def _build_tavily():
-    return TavilySearchResults(
-        max_results    = 3,
-        tavily_api_key = settings.tavily_api_key,
-        description    = (
-            "Search the web for current news, recent events, and real-time information. "
-            "Use for anything that requires up-to-date facts beyond training data."
-        ),
-    )
-
-tavily_search = _build_tavily()
+async def tavily_search_tool(query: str) -> str:
+    """
+    Search the web for current news, recent events, and real-time information.
+    Use for anything that requires up-to-date facts beyond training data.
+    """
+    try:
+        search = TavilySearchResults(
+            max_results=3, 
+            tavily_api_key=settings.tavily_api_key
+        )
+        # FIX: Use ainvoke to keep it asynchronous
+        return await search.ainvoke({"query": query})
+    except Exception as e:
+        return f"Search failed: {e}"
 
 
 # ── 4. Stock / Finance ────────────────────────────────────────────────────────
@@ -152,30 +156,12 @@ async def stock_tool(symbol: str) -> str:
         return f"Could not fetch stock data for '{symbol}': {e}"
 
 
-# ── 5. Wikipedia ──────────────────────────────────────────────────────────────
-
-@traceable(name="wikipedia_tool")
-def _build_wikipedia():
-    return WikipediaQueryRun(
-        api_wrapper = WikipediaAPIWrapper(
-            top_k_results        = 2,
-            doc_content_chars_max= 1500,
-        ),
-        description = (
-            "Look up encyclopedic facts, definitions, historical events, "
-            "scientific concepts, or background knowledge on any topic."
-        ),
-    )
-
-wikipedia_tool = _build_wikipedia()
-
 
 # ── Registry ──────────────────────────────────────────────────────────────────
 
 ALL_TOOLS = [
     weather_tool,
     currency_tool,
-    tavily_search,
+    tavily_search_tool,
     stock_tool,
-    wikipedia_tool,
 ]

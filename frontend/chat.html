@@ -1,28 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Chat — NOVA</title>
 <link rel="stylesheet" href="/css/base.css" />
 <link rel="stylesheet" href="/css/chat.css" />
-<style>
-  /* ensure html and body fill viewport exactly */
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-</style>
 </head>
 <body>
 <script type="module" src="/js/auth-guard.js"></script>
 
 <div class="chat-layout">
-  <!-- Navbar injected by components.js -->
-
-  <!-- Messages — flex:1 so it fills all remaining space between navbar and input -->
   <div class="chat-area" id="chatArea">
+    
+    <div class="top-controls">
+      <button id="endSessionBtn" class="btn btn-danger btn-sm" style="display:none;">
+        ⏹ Stop Session
+      </button>
+    </div>
+
     <div class="welcome" id="welcomeScreen">
       <span class="welcome-icon">✦</span>
       <h2>Multimodal Intelligence</h2>
@@ -35,7 +31,6 @@
     </div>
   </div>
 
-  <!-- Input panel — flex-shrink:0 so it always sits at the bottom -->
   <div class="input-panel-wrap">
     <div class="input-panel">
       <div class="preview-row" id="previewRow" style="display:none"></div>
@@ -54,7 +49,6 @@
           <span>Enter to send</span>
           <span>Shift+Enter for newline</span>
         </div>
-        <button class="btn btn-ghost btn-sm" id="endSessionBtn" style="font-size:11px">End session</button>
       </div>
     </div>
   </div>

@@ -1,8 +1,5 @@
 """
 api/chat.py — Main chat endpoint.
-
-POST /chat — accepts any combination of text, image, audio.
-Full pipeline: rate limit → cache check → LangGraph → persist → cache set → respond.
 """
 
 import time
@@ -23,7 +20,6 @@ from backend.schemas import ChatRequest, ChatResponse
 from backend.exceptions import RateLimitExceeded, InvalidInput, GraphExecutionError
 
 router = APIRouter()
-
 
 @router.post("", response_model=ChatResponse)
 async def chat(
@@ -78,8 +74,6 @@ async def chat(
     history = await get_session_history(session_id)
 
     # ── LangGraph ─────────────────────────────────────────────────────────────
-    # NOTE: key is "messages" (not "lc_messages") — must match ChatState exactly
-    # so that ToolNode and tools_condition can find the message list.
     state = {
         "raw_text":             req.text,
         "raw_image_b64":        req.image_b64,
@@ -88,7 +82,7 @@ async def chat(
         "transcribed_text":     None,
         "image_description":    None,
         "merged_input":         None,
-        "messages":             [],        # ← "messages", NOT "lc_messages"
+        "messages":             [],
         "chat_history":         history,
         "final_response":       None,
         "tools_called":         [],
@@ -97,7 +91,8 @@ async def chat(
     }
 
     try:
-        result = chatbot_graph.invoke(state)
+        # FIX: Call the graph asynchronously to support async tools!
+        result = await chatbot_graph.ainvoke(state)
     except Exception as e:
         raise GraphExecutionError(f"Graph failed: {e}")
 
@@ -131,7 +126,7 @@ async def chat(
     history      = (history + [
         {"role": "user",      "content": user_summary},
         {"role": "assistant", "content": response},
-    ])[-40:]   # cap at 20 turns
+    ])[-40:]
     await set_session_history(session_id, history)
 
     # ── Cache text-only responses ──────────────────────────────────────────────

@@ -5,8 +5,7 @@ metadata:
   labels:
     app: nova-chatbot
 data:
-  APP_ENV:            "production"
-  PORT:               "8000"
-  LANGCHAIN_PROJECT:  "nova-multimodal-chatbot"
-  FRONTEND_URL:       "https://your-domain.com"
-  GOOGLE_REDIRECT_URI: "https://your-domain.com/auth/google/callback"
+  APP_ENV:             "production"
+  PORT:                "8000"
+  LANGCHAIN_PROJECT:   "nova-multimodal-chatbot"
+  FRONTEND_URL:        "http://localhost:8000"

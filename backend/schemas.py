@@ -1,17 +1,9 @@
-"""
-schemas.py — All Pydantic request/response models.
-Imported by api/ routes and agent_llm/ nodes.
-Single source of truth for data shapes.
-"""
-
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict # Added ConfigDict
 
-
-# ── Auth ──────────────────────────────────────────────────────────────────────
-
+# -- Auth --
 class RegisterRequest(BaseModel):
     email:    EmailStr
     username: str
@@ -32,11 +24,9 @@ class RegisterRequest(BaseModel):
             raise ValueError("Username must be at least 3 characters")
         return v
 
-
 class LoginRequest(BaseModel):
     email:    EmailStr
     password: str
-
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -46,20 +36,17 @@ class TokenResponse(BaseModel):
     username:     str
     tier:         str
 
-
 class UserPublic(BaseModel):
     id:         UUID
     email:      str
     username:   str
     tier:       str
     created_at: datetime
+    
+    # Industry Practice: Modern Pydantic V2 configuration
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
-
-
-# ── Chat ──────────────────────────────────────────────────────────────────────
-
+# -- Chat --
 class ChatRequest(BaseModel):
     session_id:       Optional[str] = None
     text:             Optional[str] = None
@@ -75,7 +62,6 @@ class ChatRequest(BaseModel):
             raise ValueError(f"image_media_type must be one of {allowed}")
         return v
 
-
 class ChatResponse(BaseModel):
     session_id:        str
     message_id:        str
@@ -87,18 +73,14 @@ class ChatResponse(BaseModel):
     latency_ms:        int           = 0
     error:             Optional[str] = None
 
-
-# ── Session ───────────────────────────────────────────────────────────────────
-
+# -- Session --
 class SessionEndRequest(BaseModel):
     session_id: str
-
 
 class SessionSummaryResponse(BaseModel):
     session_id:  str
     summary:     str
     preferences: Optional[dict] = None
-
 
 class SessionPublic(BaseModel):
     id:         UUID
@@ -108,12 +90,9 @@ class SessionPublic(BaseModel):
     created_at: datetime
     ended_at:   Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
-
-# ── Preferences ───────────────────────────────────────────────────────────────
-
+# -- Preferences --
 class UserPreferencePublic(BaseModel):
     communication_style:       Optional[str]
     topics_of_interest:        Optional[List[str]]
@@ -123,5 +102,4 @@ class UserPreferencePublic(BaseModel):
     uses_images:               bool
     last_analyzed_at:          Optional[datetime]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict # Add ConfigDict
 from datetime import datetime
 
 from backend.database import get_db, User, Session as DBSession, Message, delete_session_history
@@ -37,8 +37,7 @@ class MessagePublic(BaseModel):
     has_audio:         bool
     created_at:        datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
